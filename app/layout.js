@@ -50,7 +50,7 @@ export default function RootLayout({ children }) {
             <Toaster richColors />
 
             <footer className="border-t px-6 py-8 text-center text-sm text-muted-foreground">
-              Made with ❤️ by PrepIQ
+              Made by Priyam | PrepIQ
             </footer>
           </ThemeProvider>
         </body>
