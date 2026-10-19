@@ -1,21 +1,22 @@
-
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
-import { DM_Sans, Lora } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import Header from "@/components/Header";
 import "./globals.css";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 
-const lora = Lora({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
+const lora = localFont({
+  src: [
+    { path: "./fonts/lora-latin.woff2", weight: "400 500", style: "normal" },
+    { path: "./fonts/lora-italic-latin.woff2", weight: "400 500", style: "italic" },
+  ],
   variable: "--font-serif",
 });
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+const dmSans = localFont({
+  src: "./fonts/dm-sans-latin.woff2",
+  weight: "300 600",
   variable: "--font-sans",
 });
 
@@ -40,12 +41,9 @@ export default function RootLayout({ children }) {
           >
             <Header />
 
-            
-
-<main className="flex flex-1 w-full items-center justify-center pt-20">
-  {children}
-</main>
-
+            <main className="flex w-full flex-1 items-center justify-center pt-20">
+              {children}
+            </main>
 
             <Toaster richColors />
 

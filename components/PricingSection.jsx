@@ -1,53 +1,69 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, SignInButton } from "@clerk/nextjs";
 import { CheckoutButton } from "@clerk/nextjs/experimental";
-import { SignInButton } from "@clerk/nextjs";
+
 import { Button } from "@/components/ui/button";
 import { PLANS } from "@/lib/data";
 
-export default function PricingSection() {
+export default function PricingSection({ role }) {
   const { has, userId } = useAuth();
 
-  const isSignedIn = !!userId;
-  const isOnStarter = isSignedIn && has({ plan: "starter" });
-  const isOnPro = isSignedIn && has({ plan: "pro" });
-  const isOnFree = isSignedIn && !isOnStarter && !isOnPro;
+  const isSignedIn = Boolean(userId);
+  const isInterviewer = role === "INTERVIEWER";
+
+  const isOnStarter =
+    isSignedIn && has({ plan: "starter" });
+
+  const isOnPro =
+    isSignedIn && has({ plan: "pro" });
 
   const activePlanSlug = isOnPro
     ? "pro"
     : isOnStarter
-    ? "starter"
-    : isOnFree
-    ? "free"
-    : null;
+      ? "starter"
+      : isSignedIn
+        ? "free"
+        : null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
       {PLANS.map((plan) => {
-        const isActive = activePlanSlug === plan.slug;
+        const isActive =
+          activePlanSlug === plan.slug;
+
+        const isFreePlan = !plan.planId;
+
+        const hasValidPlanId =
+          typeof plan.planId === "string" &&
+          plan.planId.trim().length > 0;
 
         return (
           <div
-            key={plan.name}
-            className={`relative rounded-2xl p-10 h-full flex flex-col transition-all duration-300 hover:-translate-y-1 ${
+            key={plan.slug}
+            className={`relative flex h-full flex-col rounded-2xl border p-10 transition-all duration-300 hover:-translate-y-1 ${
               plan.featured
-                ? "bg-[#141417] border border-amber-400/20"
-                : "bg-[#0f0f11] border border-white/10 hover:border-amber-400/10"
-            } ${isActive ? "ring-1 ring-amber-400/30" : ""}`}
+                ? "border-amber-400/20 bg-[#141417]"
+                : "border-white/10 bg-[#0f0f11] hover:border-amber-400/10"
+            } ${
+              isActive && !isInterviewer
+                ? "ring-1 ring-amber-400/30"
+                : ""
+            }`}
           >
-            {/* Most Popular badge */}
-            {plan.featured && !isActive && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-[#0a0a0b] text-xs font-bold tracking-wide uppercase px-3.5 py-1 rounded-full whitespace-nowrap">
-                Most Popular
-              </span>
-            )}
+            {plan.featured &&
+              !isActive &&
+              !isInterviewer && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-amber-400 px-3.5 py-1 text-xs font-bold uppercase tracking-wide text-[#0a0a0b]">
+                  Most Popular
+                </span>
+              )}
 
-            <p className="text-xs font-semibold text-stone-500 tracking-widest uppercase mb-5">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-widest text-stone-500">
               {plan.name}
             </p>
 
-            <div className="flex items-end gap-1 mb-1.5">
+            <div className="mb-1.5 flex items-end gap-1">
               <span
                 className={`font-serif text-5xl leading-none tracking-tight ${
                   plan.featured
@@ -57,55 +73,92 @@ export default function PricingSection() {
               >
                 {plan.price}
               </span>
-              <span className="text-sm text-stone-500 font-light mb-1.5">
+
+              <span className="mb-1.5 text-sm font-light text-stone-500">
                 /month
               </span>
             </div>
 
-            <p className="text-sm text-amber-400 mb-7">{plan.credits}</p>
+            <p className="mb-7 text-sm text-amber-400">
+              {plan.credits}
+            </p>
 
-            <div className="h-px bg-white/10 mb-7" />
+            <div className="mb-7 h-px bg-white/10" />
 
-            <ul className="space-y-3 mb-9 flex-1">
-              {plan.features.map((f) => (
+            <ul className="mb-9 flex-1 space-y-3">
+              {plan.features.map((feature) => (
                 <li
-                  key={f}
+                  key={feature}
                   className="flex items-start gap-2.5 text-sm text-stone-400"
                 >
-                  <span className="text-amber-400 text-xs mt-0.5">✓</span>
-                  {f}
+                  <span className="mt-0.5 text-xs text-amber-400">
+                    ✓
+                  </span>
+
+                  <span>{feature}</span>
                 </li>
               ))}
             </ul>
 
-            {/* CTA */}
-            {isActive ? (
-              // Already on this plan
+            {isInterviewer ? (
               <Button
+                type="button"
+                variant="outline"
+                disabled
+                className="w-full cursor-default border-white/10 bg-transparent text-stone-500 opacity-100 hover:bg-transparent disabled:cursor-default disabled:opacity-100"
+              >
+                For Interviewees Only
+              </Button>
+            ) : isActive ? (
+              <Button
+                type="button"
                 variant={plan.featured ? "gold" : "default"}
                 disabled
-                className="w-full opacity-50 cursor-not-allowed"
+                className="w-full cursor-default opacity-50"
               >
                 ✓ Current plan
               </Button>
-            ) : plan.planId === null ? (
-              // Free plan — no checkout needed
+            ) : isFreePlan ? (
               isSignedIn ? (
                 <Button
+                  type="button"
                   variant="outline"
                   disabled
-                  className="w-full opacity-50 cursor-not-allowed"
+                  className="w-full cursor-default opacity-50"
                 >
-                  Default plan
+                  Free plan
                 </Button>
               ) : (
                 <SignInButton mode="modal">
-                  <Button variant="outline" className="w-full">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                  >
                     Get started free
                   </Button>
                 </SignInButton>
               )
-            ) : isSignedIn ? (
+            ) : !hasValidPlanId ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled
+                className="w-full cursor-default opacity-60"
+              >
+                Plan unavailable
+              </Button>
+            ) : !isSignedIn ? (
+              <SignInButton mode="modal">
+                <Button
+                  type="button"
+                  variant={plan.featured ? "gold" : "outline"}
+                  className="w-full"
+                >
+                  Get started →
+                </Button>
+              </SignInButton>
+            ) : (
               <CheckoutButton
                 planId={plan.planId}
                 planPeriod="month"
@@ -120,26 +173,19 @@ export default function PricingSection() {
                 }}
               >
                 <Button
+                  type="button"
                   variant={plan.featured ? "gold" : "outline"}
                   className="w-full"
                 >
-                  {activePlanSlug === "pro" && plan.slug === "starter"
+                  {activePlanSlug === "pro" &&
+                  plan.slug === "starter"
                     ? "Downgrade"
-                    : activePlanSlug === "starter" && plan.slug === "pro"
-                    ? "Upgrade →"
-                    : "Get started →"}
+                    : activePlanSlug === "starter" &&
+                        plan.slug === "pro"
+                      ? "Upgrade →"
+                      : "Get started →"}
                 </Button>
               </CheckoutButton>
-            ) : (
-              // Paid plan, signed out → sign in first
-              <SignInButton mode="modal">
-                <Button
-                  variant={plan.featured ? "gold" : "outline"}
-                  className="w-full"
-                >
-                  Get started →
-                </Button>
-              </SignInButton>
             )}
           </div>
         );

@@ -1,4 +1,5 @@
 
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bot, Wallet } from "lucide-react";
@@ -14,7 +15,7 @@ import {
 import { StarsBackgroundDemo } from "@/components/demo-components-backgrounds-stars";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import PricingSection from "@/components/PricingSection";
+import PricingSectionWithRole from "@/components/PricingSectionWithRole";
 import { CodeDemo } from "@/components/demo-components-animate-code";
 
 function MockUI({ rows = 3 }) {
@@ -375,7 +376,7 @@ export default function LandingPage() {
       {/* ROLES */}
       <section className="relative z-10 mx-auto max-w-5xl bg-[#0b0b0b] px-6 pb-28">
         <div className="mb-16 text-center">
-          <SectionLabel>Who it's for</SectionLabel>
+          <SectionLabel>Who it&apos;s for</SectionLabel>
           <SectionHeading gray="Built for both sides" gold="of the table" />
         </div>
 
@@ -427,7 +428,27 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <PricingSection />
+        <Suspense
+          fallback={
+            <div
+              aria-hidden="true"
+              className="grid grid-cols-1 gap-5 md:grid-cols-3"
+            >
+              {[0, 1, 2].map((index) => (
+                <div
+                  key={index}
+                  className={`h-[440px] animate-pulse rounded-2xl border p-10 ${
+                    index === 1
+                      ? "border-amber-400/20 bg-[#141417]"
+                      : "border-white/10 bg-[#0f0f11]"
+                  }`}
+                />
+              ))}
+            </div>
+          }
+        >
+          <PricingSectionWithRole />
+        </Suspense>
       </section>
 
       {/* CTA */}

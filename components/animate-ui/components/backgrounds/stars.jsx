@@ -7,8 +7,11 @@ import { cn } from '@/lib/utils';
 function generateStars(count, starColor) {
   const shadows = [];
   for (let i = 0; i < count; i++) {
-    const x = Math.floor(Math.random() * 4000) - 2000;
-    const y = Math.floor(Math.random() * 4000) - 2000;
+    const seed = i + count * 1009;
+    const randomX = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+    const randomY = Math.abs(Math.sin(seed * 78.233) * 24634.6345) % 1;
+    const x = Math.floor(randomX * 4000) - 2000;
+    const y = Math.floor(randomY * 4000) - 2000;
     shadows.push(`${x}px ${y}px ${starColor}`);
   }
   return shadows.join(', ');
@@ -22,11 +25,10 @@ function StarLayer({
   className,
   ...props
 }) {
-  const [boxShadow, setBoxShadow] = React.useState('');
-
-  React.useEffect(() => {
-    setBoxShadow(generateStars(count, starColor));
-  }, [count, starColor]);
+  const boxShadow = React.useMemo(
+    () => generateStars(count, starColor),
+    [count, starColor],
+  );
 
   return (
     <motion.div
@@ -57,7 +59,7 @@ function StarLayer({
 }
 
 function StarsBackground({
-  children,
+  children = null,
   className,
   factor = 0.05,
   speed = 50,

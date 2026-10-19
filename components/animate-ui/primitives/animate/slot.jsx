@@ -1,4 +1,5 @@
 'use client';;
+/* eslint-disable react-hooks/static-components -- Slot must adapt arbitrary child types at runtime. */
 import * as React from 'react';
 import { motion, isMotionComponent } from 'motion/react';
 import { cn } from '@/lib/utils';

@@ -34,18 +34,21 @@ function CodeBlock({
     },
   );
 
-  const [visibleCode, setVisibleCode] = React.useState('');
+  const [typing, setTyping] = React.useState({ source: code, text: '' });
   const [highlightedCode, setHighlightedCode] = React.useState('');
-  const [isDone, setIsDone] = React.useState(false);
+  const [completedCode, setCompletedCode] = React.useState(null);
+  const visibleCode = typing.source === code ? typing.text : '';
+  const renderedCode = writing ? visibleCode : code;
+  const isDone = !writing || !code.length || completedCode === code;
 
   React.useEffect(() => {
-    if (!visibleCode.length || !isInView) return;
+    if (!renderedCode.length || !isInView) return;
 
     const loadHighlightedCode = async () => {
       try {
         const { codeToHtml } = await import('shiki');
 
-        const highlighted = await codeToHtml(visibleCode, {
+        const highlighted = await codeToHtml(renderedCode, {
           lang,
           themes,
           defaultColor: theme,
@@ -58,17 +61,22 @@ function CodeBlock({
     };
 
     loadHighlightedCode();
-  }, [lang, themes, writing, isInView, duration, delay, visibleCode, theme]);
+  }, [lang, themes, isInView, renderedCode, theme]);
 
   React.useEffect(() => {
     if (!writing) {
-      setVisibleCode(code);
       onDone?.();
       onWrite?.({ index: code.length, length: code.length, done: true });
       return;
     }
 
-    if (!code.length || !isInView) return;
+    if (!isInView) return;
+
+    if (!code.length) {
+      onDone?.();
+      onWrite?.({ index: 0, length: 0, done: true });
+      return;
+    }
 
     const characters = Array.from(code);
     let index = 0;
@@ -77,17 +85,18 @@ function CodeBlock({
     let intervalId;
 
     const timeout = setTimeout(() => {
+      setTyping({ source: code, text: '' });
+      setCompletedCode(null);
+
       intervalId = setInterval(() => {
         if (index < characters.length) {
-          setVisibleCode(() => {
-            const nextChar = characters.slice(0, index + 1).join('');
-            onWrite?.({
-              index: index + 1,
-              length: characters.length,
-              done: false,
-            });
-            index += 1;
-            return nextChar;
+          index += 1;
+          const nextChar = characters.slice(0, index).join('');
+          setTyping({ source: code, text: nextChar });
+          onWrite?.({
+            index,
+            length: characters.length,
+            done: false,
           });
           localRef.current?.scrollTo({
             top: localRef.current?.scrollHeight,
@@ -95,7 +104,7 @@ function CodeBlock({
           });
         } else {
           clearInterval(intervalId);
-          setIsDone(true);
+          setCompletedCode(code);
           onDone?.();
           onWrite?.({
             index: characters.length,
