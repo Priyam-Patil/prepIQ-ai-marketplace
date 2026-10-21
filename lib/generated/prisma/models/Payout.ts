@@ -50,6 +50,8 @@ export type PayoutMinAggregateOutputType = {
   adminNote: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  approvedAt: Date | null
+  approvedBy: string | null
   processedAt: Date | null
   processedBy: string | null
 }
@@ -66,6 +68,8 @@ export type PayoutMaxAggregateOutputType = {
   adminNote: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  approvedAt: Date | null
+  approvedBy: string | null
   processedAt: Date | null
   processedBy: string | null
 }
@@ -82,6 +86,8 @@ export type PayoutCountAggregateOutputType = {
   adminNote: number
   createdAt: number
   updatedAt: number
+  approvedAt: number
+  approvedBy: number
   processedAt: number
   processedBy: number
   _all: number
@@ -112,6 +118,8 @@ export type PayoutMinAggregateInputType = {
   adminNote?: true
   createdAt?: true
   updatedAt?: true
+  approvedAt?: true
+  approvedBy?: true
   processedAt?: true
   processedBy?: true
 }
@@ -128,6 +136,8 @@ export type PayoutMaxAggregateInputType = {
   adminNote?: true
   createdAt?: true
   updatedAt?: true
+  approvedAt?: true
+  approvedBy?: true
   processedAt?: true
   processedBy?: true
 }
@@ -144,6 +154,8 @@ export type PayoutCountAggregateInputType = {
   adminNote?: true
   createdAt?: true
   updatedAt?: true
+  approvedAt?: true
+  approvedBy?: true
   processedAt?: true
   processedBy?: true
   _all?: true
@@ -247,6 +259,8 @@ export type PayoutGroupByOutputType = {
   adminNote: string | null
   createdAt: Date
   updatedAt: Date
+  approvedAt: Date | null
+  approvedBy: string | null
   processedAt: Date | null
   processedBy: string | null
   _count: PayoutCountAggregateOutputType | null
@@ -286,6 +300,8 @@ export type PayoutWhereInput = {
   adminNote?: Prisma.StringNullableFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
+  approvedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   processedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   processedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   interviewer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -303,6 +319,8 @@ export type PayoutOrderByWithRelationInput = {
   adminNote?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   processedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   processedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   interviewer?: Prisma.UserOrderByWithRelationInput
@@ -323,6 +341,8 @@ export type PayoutWhereUniqueInput = Prisma.AtLeast<{
   adminNote?: Prisma.StringNullableFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
+  approvedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   processedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   processedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   interviewer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -340,6 +360,8 @@ export type PayoutOrderByWithAggregationInput = {
   adminNote?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   processedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   processedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PayoutCountOrderByAggregateInput
@@ -364,6 +386,8 @@ export type PayoutScalarWhereWithAggregatesInput = {
   adminNote?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Payout"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Payout"> | Date | string
+  approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
   processedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payout"> | Date | string | null
   processedBy?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
 }
@@ -379,6 +403,8 @@ export type PayoutCreateInput = {
   adminNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   processedAt?: Date | string | null
   processedBy?: string | null
   interviewer: Prisma.UserCreateNestedOneWithoutPayoutsInput
@@ -396,6 +422,8 @@ export type PayoutUncheckedCreateInput = {
   adminNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   processedAt?: Date | string | null
   processedBy?: string | null
 }
@@ -411,6 +439,8 @@ export type PayoutUpdateInput = {
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   processedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   interviewer?: Prisma.UserUpdateOneRequiredWithoutPayoutsNestedInput
@@ -428,6 +458,8 @@ export type PayoutUncheckedUpdateInput = {
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   processedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -444,6 +476,8 @@ export type PayoutCreateManyInput = {
   adminNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   processedAt?: Date | string | null
   processedBy?: string | null
 }
@@ -459,6 +493,8 @@ export type PayoutUpdateManyMutationInput = {
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   processedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -475,6 +511,8 @@ export type PayoutUncheckedUpdateManyInput = {
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   processedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -501,6 +539,8 @@ export type PayoutCountOrderByAggregateInput = {
   adminNote?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
   processedAt?: Prisma.SortOrder
   processedBy?: Prisma.SortOrder
 }
@@ -523,6 +563,8 @@ export type PayoutMaxOrderByAggregateInput = {
   adminNote?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
   processedAt?: Prisma.SortOrder
   processedBy?: Prisma.SortOrder
 }
@@ -539,6 +581,8 @@ export type PayoutMinOrderByAggregateInput = {
   adminNote?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
   processedAt?: Prisma.SortOrder
   processedBy?: Prisma.SortOrder
 }
@@ -614,6 +658,8 @@ export type PayoutCreateWithoutInterviewerInput = {
   adminNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   processedAt?: Date | string | null
   processedBy?: string | null
 }
@@ -629,6 +675,8 @@ export type PayoutUncheckedCreateWithoutInterviewerInput = {
   adminNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   processedAt?: Date | string | null
   processedBy?: string | null
 }
@@ -674,6 +722,8 @@ export type PayoutScalarWhereInput = {
   adminNote?: Prisma.StringNullableFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
+  approvedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   processedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   processedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
 }
@@ -689,6 +739,8 @@ export type PayoutCreateManyInterviewerInput = {
   adminNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   processedAt?: Date | string | null
   processedBy?: string | null
 }
@@ -704,6 +756,8 @@ export type PayoutUpdateWithoutInterviewerInput = {
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   processedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -719,6 +773,8 @@ export type PayoutUncheckedUpdateWithoutInterviewerInput = {
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   processedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -734,6 +790,8 @@ export type PayoutUncheckedUpdateManyWithoutInterviewerInput = {
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   processedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -752,6 +810,8 @@ export type PayoutSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   adminNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   processedAt?: boolean
   processedBy?: boolean
   interviewer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -769,6 +829,8 @@ export type PayoutSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   adminNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   processedAt?: boolean
   processedBy?: boolean
   interviewer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -786,6 +848,8 @@ export type PayoutSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   adminNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   processedAt?: boolean
   processedBy?: boolean
   interviewer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -803,11 +867,13 @@ export type PayoutSelectScalar = {
   adminNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   processedAt?: boolean
   processedBy?: boolean
 }
 
-export type PayoutOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "interviewerId" | "credits" | "platformFee" | "netAmount" | "paymentMethod" | "paymentDetail" | "status" | "adminNote" | "createdAt" | "updatedAt" | "processedAt" | "processedBy", ExtArgs["result"]["payout"]>
+export type PayoutOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "interviewerId" | "credits" | "platformFee" | "netAmount" | "paymentMethod" | "paymentDetail" | "status" | "adminNote" | "createdAt" | "updatedAt" | "approvedAt" | "approvedBy" | "processedAt" | "processedBy", ExtArgs["result"]["payout"]>
 export type PayoutInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   interviewer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -835,6 +901,8 @@ export type $PayoutPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     adminNote: string | null
     createdAt: Date
     updatedAt: Date
+    approvedAt: Date | null
+    approvedBy: string | null
     processedAt: Date | null
     processedBy: string | null
   }, ExtArgs["result"]["payout"]>
@@ -1272,6 +1340,8 @@ export interface PayoutFieldRefs {
   readonly adminNote: Prisma.FieldRef<"Payout", 'String'>
   readonly createdAt: Prisma.FieldRef<"Payout", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Payout", 'DateTime'>
+  readonly approvedAt: Prisma.FieldRef<"Payout", 'DateTime'>
+  readonly approvedBy: Prisma.FieldRef<"Payout", 'String'>
   readonly processedAt: Prisma.FieldRef<"Payout", 'DateTime'>
   readonly processedBy: Prisma.FieldRef<"Payout", 'String'>
 }

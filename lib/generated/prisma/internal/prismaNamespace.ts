@@ -404,6 +404,7 @@ export const ModelName = {
   SessionFeedback: 'SessionFeedback',
   StreamRecording: 'StreamRecording',
   CreditTransaction: 'CreditTransaction',
+  BillingCreditGrant: 'BillingCreditGrant',
   Payout: 'Payout',
   EmailNotification: 'EmailNotification',
   AiConversation: 'AiConversation',
@@ -423,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "availability" | "booking" | "feedback" | "sessionFeedback" | "streamRecording" | "creditTransaction" | "payout" | "emailNotification" | "aiConversation" | "aiChatMessage"
+    modelProps: "user" | "availability" | "booking" | "feedback" | "sessionFeedback" | "streamRecording" | "creditTransaction" | "billingCreditGrant" | "payout" | "emailNotification" | "aiConversation" | "aiChatMessage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -945,6 +946,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BillingCreditGrant: {
+      payload: Prisma.$BillingCreditGrantPayload<ExtArgs>
+      fields: Prisma.BillingCreditGrantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BillingCreditGrantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BillingCreditGrantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>
+        }
+        findFirst: {
+          args: Prisma.BillingCreditGrantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BillingCreditGrantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>
+        }
+        findMany: {
+          args: Prisma.BillingCreditGrantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>[]
+        }
+        create: {
+          args: Prisma.BillingCreditGrantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>
+        }
+        createMany: {
+          args: Prisma.BillingCreditGrantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BillingCreditGrantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>[]
+        }
+        delete: {
+          args: Prisma.BillingCreditGrantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>
+        }
+        update: {
+          args: Prisma.BillingCreditGrantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>
+        }
+        deleteMany: {
+          args: Prisma.BillingCreditGrantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BillingCreditGrantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BillingCreditGrantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>[]
+        }
+        upsert: {
+          args: Prisma.BillingCreditGrantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingCreditGrantPayload>
+        }
+        aggregate: {
+          args: Prisma.BillingCreditGrantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBillingCreditGrant>
+        }
+        groupBy: {
+          args: Prisma.BillingCreditGrantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingCreditGrantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BillingCreditGrantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingCreditGrantCountAggregateOutputType> | number
+        }
+      }
+    }
     Payout: {
       payload: Prisma.$PayoutPayload<ExtArgs>
       fields: Prisma.PayoutFieldRefs
@@ -1388,6 +1463,20 @@ export const CreditTransactionScalarFieldEnum = {
 export type CreditTransactionScalarFieldEnum = (typeof CreditTransactionScalarFieldEnum)[keyof typeof CreditTransactionScalarFieldEnum]
 
 
+export const BillingCreditGrantScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  paymentAttemptId: 'paymentAttemptId',
+  subscriptionItemId: 'subscriptionItemId',
+  periodStart: 'periodStart',
+  plan: 'plan',
+  credits: 'credits',
+  createdAt: 'createdAt'
+} as const
+
+export type BillingCreditGrantScalarFieldEnum = (typeof BillingCreditGrantScalarFieldEnum)[keyof typeof BillingCreditGrantScalarFieldEnum]
+
+
 export const PayoutScalarFieldEnum = {
   id: 'id',
   interviewerId: 'interviewerId',
@@ -1400,6 +1489,8 @@ export const PayoutScalarFieldEnum = {
   adminNote: 'adminNote',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  approvedAt: 'approvedAt',
+  approvedBy: 'approvedBy',
   processedAt: 'processedAt',
   processedBy: 'processedBy'
 } as const
@@ -1823,6 +1914,7 @@ export type GlobalOmitConfig = {
   sessionFeedback?: Prisma.SessionFeedbackOmit
   streamRecording?: Prisma.StreamRecordingOmit
   creditTransaction?: Prisma.CreditTransactionOmit
+  billingCreditGrant?: Prisma.BillingCreditGrantOmit
   payout?: Prisma.PayoutOmit
   emailNotification?: Prisma.EmailNotificationOmit
   aiConversation?: Prisma.AiConversationOmit

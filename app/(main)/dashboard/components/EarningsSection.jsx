@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { getPayoutStatusLabel } from "@/lib/payout-status.mjs";
 
 export default function EarningsSection({
   user,
@@ -69,7 +70,7 @@ export default function EarningsSection({
                 </div>
 
                 <span className="text-xs text-gray-400">
-                  {payout.status.toLowerCase()}
+                  {getPayoutStatusLabel(payout.status)}
                 </span>
               </li>
             ))}

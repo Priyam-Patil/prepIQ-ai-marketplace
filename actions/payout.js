@@ -3,6 +3,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/prisma";
+import { getPayoutApprovalTransition } from "@/lib/payout-status.mjs";
 
 export async function approvePayout(input) {
   const { userId } = await auth();
@@ -25,14 +26,15 @@ export async function approvePayout(input) {
     }
 
     const now = new Date();
+    const nextStatus = getPayoutApprovalTransition("PROCESSING");
     const result = await db.payout.updateMany({
       where: { id: payoutId, status: "PROCESSING" },
-      data: { status: "PROCESSED", processedAt: now, processedBy: userId },
+      data: { status: nextStatus, approvedAt: now, approvedBy: userId },
     });
     if (result.count !== 1) {
       const existing = await db.payout.findUnique({ where: { id: payoutId }, select: { status: true } });
-      return existing?.status === "PROCESSED"
-        ? { success: true, alreadyProcessed: true }
+      return ["APPROVED", "PROCESSED"].includes(existing?.status)
+        ? { success: true, alreadyApproved: true }
         : { success: false, error: "Payout request not found or no longer pending." };
     }
 

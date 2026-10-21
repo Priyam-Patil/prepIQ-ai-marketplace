@@ -58,6 +58,7 @@ export const ModelName = {
   SessionFeedback: 'SessionFeedback',
   StreamRecording: 'StreamRecording',
   CreditTransaction: 'CreditTransaction',
+  BillingCreditGrant: 'BillingCreditGrant',
   Payout: 'Payout',
   EmailNotification: 'EmailNotification',
   AiConversation: 'AiConversation',
@@ -188,6 +189,20 @@ export const CreditTransactionScalarFieldEnum = {
 export type CreditTransactionScalarFieldEnum = (typeof CreditTransactionScalarFieldEnum)[keyof typeof CreditTransactionScalarFieldEnum]
 
 
+export const BillingCreditGrantScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  paymentAttemptId: 'paymentAttemptId',
+  subscriptionItemId: 'subscriptionItemId',
+  periodStart: 'periodStart',
+  plan: 'plan',
+  credits: 'credits',
+  createdAt: 'createdAt'
+} as const
+
+export type BillingCreditGrantScalarFieldEnum = (typeof BillingCreditGrantScalarFieldEnum)[keyof typeof BillingCreditGrantScalarFieldEnum]
+
+
 export const PayoutScalarFieldEnum = {
   id: 'id',
   interviewerId: 'interviewerId',
@@ -200,6 +215,8 @@ export const PayoutScalarFieldEnum = {
   adminNote: 'adminNote',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  approvedAt: 'approvedAt',
+  approvedBy: 'approvedBy',
   processedAt: 'processedAt',
   processedBy: 'processedBy'
 } as const

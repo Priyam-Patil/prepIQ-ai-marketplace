@@ -21,7 +21,7 @@ export default async function HeaderRole() {
         clerkUser = await currentUser();
 
         if (clerkUser) {
-          user = await checkUser(clerkUser, authState.has);
+          user = await checkUser(clerkUser);
         }
       } catch (error) {
         console.error(

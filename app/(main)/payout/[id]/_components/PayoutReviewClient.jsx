@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { approvePayout } from "@/actions/payout";
 import useFetch from "@/hooks/use-fetch";
+import { isPayoutApproved } from "@/lib/payout-status.mjs";
 
 function formatMoney(value) {
   const amount = Number(value);
@@ -57,17 +58,17 @@ export default function PayoutReviewClient({ payout }) {
     }
   }
 
-  const alreadyProcessed = payout.status === "PROCESSED";
+  const alreadyProcessed = isPayoutApproved(payout.status);
 
   if (alreadyProcessed || confirmed) {
     return (
       <section className="rounded-2xl border border-white/10 bg-[#0f0f11] p-8 text-center">
         <div className="text-3xl">✓</div>
         <h2 className="mt-3 text-xl font-semibold">
-          Payout processed
+          Payout approved
         </h2>
         <p className="mt-2 text-sm text-stone-400">
-          {payout.interviewerName} · {formatMoney(payout.netAmount)}
+          Approval is recorded. The actual transfer has not been verified.
         </p>
       </section>
     );
@@ -107,9 +108,8 @@ export default function PayoutReviewClient({ payout }) {
       </div>
 
       <p className="text-xs leading-5 text-stone-400">
-        Confirm the payout details before proceeding. Approval should
-        be recorded on the server and must not be treated as proof
-        that the payment has actually been sent.
+        Confirm the payout details before approving. Approval records
+        the decision only; it does not send or verify a transfer.
       </p>
 
       {error && (
@@ -124,7 +124,7 @@ export default function PayoutReviewClient({ payout }) {
         onClick={handleApprove}
         className="w-full"
       >
-        {loading ? "Processing…" : "Approve payout"}
+        {loading ? "Saving approval…" : "Approve payout request"}
       </Button>
     </section>
   );

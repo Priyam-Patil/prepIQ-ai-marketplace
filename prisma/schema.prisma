@@ -30,6 +30,7 @@ enum AvailabilityStatus {
 
 enum PayoutStatus {
   PROCESSING
+  APPROVED
   PROCESSED
 }
 
@@ -88,6 +89,7 @@ model User {
   bookingsAsInterviewee Booking[]           @relation("IntervieweeBookings")
   bookingsAsInterviewer Booking[]           @relation("InterviewerBookings")
   transactions          CreditTransaction[]
+  billingCreditGrants   BillingCreditGrant[]
   sessionFeedback       SessionFeedback[]
   payouts               Payout[]
   aiConversations        AiConversation[]
@@ -191,6 +193,21 @@ model CreditTransaction {
   createdAt DateTime        @default(now())
 }
 
+model BillingCreditGrant {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentAttemptId  String
+  subscriptionItemId String
+  periodStart       String
+  plan              String
+  credits           Int
+  createdAt         DateTime @default(now())
+
+  @@unique([paymentAttemptId, subscriptionItemId])
+  @@index([userId, createdAt])
+}
+
 // ─── PAYOUTS ─────────────────────────────────────────────
 
 model Payout {
@@ -206,6 +223,8 @@ model Payout {
   adminNote     String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  approvedAt    DateTime?
+  approvedBy    String?
   processedAt   DateTime?
   processedBy   String?
 

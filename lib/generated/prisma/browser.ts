@@ -53,6 +53,11 @@ export type StreamRecording = Prisma.StreamRecordingModel
  */
 export type CreditTransaction = Prisma.CreditTransactionModel
 /**
+ * Model BillingCreditGrant
+ * 
+ */
+export type BillingCreditGrant = Prisma.BillingCreditGrantModel
+/**
  * Model Payout
  * 
  */

@@ -19,6 +19,7 @@ const isProtectedRoute = createRouteMatcher([
 
 const isSignedServiceRoute = createRouteMatcher([
   "/api/webhooks/stream(.*)",
+  "/api/webhooks/clerk(.*)",
   "/api/cron/email-notifications(.*)",
 ]);
 
