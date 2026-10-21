@@ -126,6 +126,23 @@
   }
 }
 
+@keyframes feedback-twinkle {
+  0%, 100% { opacity: 0.2; transform: translate3d(0, 0, 0) scale(0.8); }
+  50% { opacity: 0.85; transform: translate3d(2px, -3px, 0) scale(1.15); }
+}
+
+.feedback-star {
+  opacity: 0.45;
+  box-shadow: 0 0 8px 1px rgb(252 211 77 / 35%);
+  animation: feedback-twinkle 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-star {
+    animation: none;
+  }
+}
+
 
 .cl-internal-b8hinb {
   grid-template-columns: auto auto auto !important;

@@ -13,11 +13,13 @@ const isProtectedRoute = createRouteMatcher([
   "/onboarding(.*)",
   "/interviewers(.*)",
   "/call(.*)",
+  "/ai-chat(.*)",
   "/payout(.*)",
 ]);
 
-const isWebhookRoute = createRouteMatcher([
+const isSignedServiceRoute = createRouteMatcher([
   "/api/webhooks/stream(.*)",
+  "/api/cron/email-notifications(.*)",
 ]);
 
 const aj = arcjet({
@@ -37,11 +39,11 @@ const aj = arcjet({
 export default clerkMiddleware(async (auth, req) => {
   const pathname = req.nextUrl.pathname;
 
-  // Allow the public homepage to load without an Arcjet check.
-  // Keep Clerk middleware active for the request.
+  // The signed webhook/cron handlers verify their own request credentials.
+  // Keep Clerk middleware active for browser routes.
   if (
     pathname !== "/" &&
-    !isWebhookRoute(req)
+    !isSignedServiceRoute(req)
   ) {
     const decision = await aj.protect(req);
 

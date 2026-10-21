@@ -55,7 +55,7 @@ export default function HeaderClient({ role, user }) {
           <Show when="signed-in">
             {role === "INTERVIEWEE" && (
               <>
-                <Button variant="ghost" asChild>
+                <Button variant="gold" asChild>
                   <Link href="/explore">
                     Explore
                   </Link>

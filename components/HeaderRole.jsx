@@ -3,6 +3,8 @@ import { connection } from "next/server";
 import { checkUser } from "@/lib/checkUser";
 import HeaderClient from "@/components/HeaderClient";
 import RoleRedirect from "@/components/RoleRedirect";
+import { getSafeErrorDetails } from "@/lib/safe-error.mjs";
+import { db } from "@/lib/prisma";
 
 export default async function HeaderRole() {
   await connection();
@@ -15,21 +17,41 @@ export default async function HeaderRole() {
     userId = authState.userId;
 
     if (userId) {
-      clerkUser = await currentUser();
+      try {
+        clerkUser = await currentUser();
 
-      if (clerkUser) {
-        user = await checkUser(clerkUser, authState.has);
+        if (clerkUser) {
+          user = await checkUser(clerkUser, authState.has);
+        }
+      } catch (error) {
+        console.error(
+          "HeaderRole Clerk profile lookup failed.",
+          getSafeErrorDetails(error),
+        );
+      }
+
+      // A valid Clerk session is enough to safely look up this user's existing
+      // local role. This keeps role-based navigation available during a Clerk
+      // Backend API outage without assigning or elevating a role.
+      if (!user) {
+        try {
+          user = await db.user.findUnique({
+            where: { clerkUserId: userId },
+          });
+        } catch (error) {
+          console.error(
+            "HeaderRole local user lookup failed.",
+            getSafeErrorDetails(error),
+          );
+        }
       }
     }
   } catch (error) {
-    console.error(
-      "HeaderRole error:",
-      error instanceof Error ? error.message : error
-    );
+    console.error("HeaderRole initialization failed.", getSafeErrorDetails(error));
   }
 
   const role = user?.role ?? null;
-  const isSignedIn = Boolean(userId && clerkUser);
+  const isSignedIn = Boolean(userId);
 
   return (
     <>

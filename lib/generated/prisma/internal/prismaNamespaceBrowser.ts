@@ -55,8 +55,13 @@ export const ModelName = {
   Availability: 'Availability',
   Booking: 'Booking',
   Feedback: 'Feedback',
+  SessionFeedback: 'SessionFeedback',
+  StreamRecording: 'StreamRecording',
   CreditTransaction: 'CreditTransaction',
-  Payout: 'Payout'
+  Payout: 'Payout',
+  EmailNotification: 'EmailNotification',
+  AiConversation: 'AiConversation',
+  AiChatMessage: 'AiChatMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -116,6 +121,7 @@ export const BookingScalarFieldEnum = {
   interviewerId: 'interviewerId',
   startTime: 'startTime',
   endTime: 'endTime',
+  category: 'category',
   status: 'status',
   creditsCharged: 'creditsCharged',
   streamCallId: 'streamCallId',
@@ -144,6 +150,30 @@ export const FeedbackScalarFieldEnum = {
 } as const
 
 export type FeedbackScalarFieldEnum = (typeof FeedbackScalarFieldEnum)[keyof typeof FeedbackScalarFieldEnum]
+
+
+export const SessionFeedbackScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  intervieweeId: 'intervieweeId',
+  rating: 'rating',
+  comment: 'comment',
+  createdAt: 'createdAt'
+} as const
+
+export type SessionFeedbackScalarFieldEnum = (typeof SessionFeedbackScalarFieldEnum)[keyof typeof SessionFeedbackScalarFieldEnum]
+
+
+export const StreamRecordingScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  streamEgressId: 'streamEgressId',
+  recordingUrl: 'recordingUrl',
+  readyAt: 'readyAt',
+  createdAt: 'createdAt'
+} as const
+
+export type StreamRecordingScalarFieldEnum = (typeof StreamRecordingScalarFieldEnum)[keyof typeof StreamRecordingScalarFieldEnum]
 
 
 export const CreditTransactionScalarFieldEnum = {
@@ -177,12 +207,64 @@ export const PayoutScalarFieldEnum = {
 export type PayoutScalarFieldEnum = (typeof PayoutScalarFieldEnum)[keyof typeof PayoutScalarFieldEnum]
 
 
+export const EmailNotificationScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  kind: 'kind',
+  bookingId: 'bookingId',
+  recipient: 'recipient',
+  payload: 'payload',
+  scheduledFor: 'scheduledFor',
+  status: 'status',
+  attempts: 'attempts',
+  sentAt: 'sentAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmailNotificationScalarFieldEnum = (typeof EmailNotificationScalarFieldEnum)[keyof typeof EmailNotificationScalarFieldEnum]
+
+
+export const AiConversationScalarFieldEnum = {
+  id: 'id',
+  scopeKey: 'scopeKey',
+  userId: 'userId',
+  bookingId: 'bookingId',
+  category: 'category',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiConversationScalarFieldEnum = (typeof AiConversationScalarFieldEnum)[keyof typeof AiConversationScalarFieldEnum]
+
+
+export const AiChatMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  clientMessageId: 'clientMessageId',
+  replyToMessageId: 'replyToMessageId',
+  createdAt: 'createdAt'
+} as const
+
+export type AiChatMessageScalarFieldEnum = (typeof AiChatMessageScalarFieldEnum)[keyof typeof AiChatMessageScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -199,4 +281,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

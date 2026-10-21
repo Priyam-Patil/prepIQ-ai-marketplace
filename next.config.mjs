@@ -5,6 +5,7 @@ const nextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  reactStrictMode:true,
   images: {
     remotePatterns: [
       {

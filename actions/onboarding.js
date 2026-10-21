@@ -16,6 +16,9 @@ export async function completeOnboarding(data) {
       };
     }
 
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      return { success: false, error: "Please complete the onboarding form." };
+    }
     const { role, title, company, yearsExp, bio, categories } = data;
     const categoryValues = CATEGORIES.map((category) => category.value).filter(Boolean);
 
@@ -69,8 +72,8 @@ export async function completeOnboarding(data) {
       };
     }
 
-    await db.user.update({
-      where: { clerkUserId: user.id },
+    const updated = await db.user.updateMany({
+      where: { clerkUserId: user.id, role: "UNASSIGNED" },
       data: {
         role,
         ...(role === "INTERVIEWER" && {
@@ -83,9 +86,13 @@ export async function completeOnboarding(data) {
       },
     });
 
+    if (updated.count !== 1) {
+      return { success: false, error: "Your role has already been selected." };
+    }
+
     return { success: true };
   } catch (error) {
-    console.error("Onboarding error:", error);
+    console.error("Onboarding failed.", error?.name || "Error");
 
     return {
       success: false,

@@ -1,45 +1,148 @@
-import Link from "next/link";
 
-function formatDate(date) {
-  return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(date);
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { approvePayout } from "@/actions/payout";
+import useFetch from "@/hooks/use-fetch";
+
+function formatMoney(value) {
+  const amount = Number(value);
+
+  return Number.isFinite(amount)
+    ? new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount)
+    : "Unavailable";
 }
 
-export default function PayoutReviewClient({ data }) {
-  if (data.payout) {
-    const payout = data.payout;
+export default function PayoutReviewClient({ payout }) {
+  const router = useRouter();
+
+  const {
+    data,
+    loading,
+    error,
+    fn: approveFn,
+  } = useFetch(approvePayout);
+
+  const [confirmed, setConfirmed] = useState(false);
+
+  async function handleApprove() {
+    if (loading || confirmed) return;
+
+    const accepted = window.confirm(
+      `Approve payout of ${formatMoney(payout.netAmount)}?`
+    );
+
+    if (!accepted) return;
+
+    try {
+      const result = await approveFn({ payoutId: payout.id });
+
+      if (result?.success) {
+        setConfirmed(true);
+        toast.success("Payout approval completed.");
+        router.refresh();
+      } else {
+        toast.error(result?.error || "Could not approve payout.");
+      }
+    } catch {
+      toast.error("Payout approval failed. Please try again.");
+    }
+  }
+
+  const alreadyProcessed = payout.status === "PROCESSED";
+
+  if (alreadyProcessed || confirmed) {
     return (
-      <main className="min-h-screen bg-[#090909] px-5 pb-20 pt-12 text-white sm:px-8">
-        <section className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-9">
-          <Link href="/payout/new" className="text-sm text-amber-400 hover:text-amber-300">← Payout history</Link>
-          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">Withdrawal request</p>
-          <h1 className="mt-2 text-3xl font-bold">{payout.credits} credits</h1>
-          <p className="mt-3 text-sm text-gray-400">Requested {formatDate(payout.createdAt)} · {payout.status.toLowerCase()}</p>
-          <dl className="mt-7 grid gap-4 border-t border-white/10 pt-6 sm:grid-cols-2">
-            <div><dt className="text-xs text-gray-500">Payment method</dt><dd className="mt-1 text-sm text-gray-200">{payout.paymentMethod}</dd></div>
-            <div><dt className="text-xs text-gray-500">Net amount</dt><dd className="mt-1 text-sm text-gray-200">{payout.netAmount}</dd></div>
-            <div><dt className="text-xs text-gray-500">Platform fee</dt><dd className="mt-1 text-sm text-gray-200">{payout.platformFee}</dd></div>
-            {payout.adminNote && <div className="sm:col-span-2"><dt className="text-xs text-gray-500">Update</dt><dd className="mt-1 text-sm text-gray-200">{payout.adminNote}</dd></div>}
-          </dl>
-        </section>
-      </main>
+      <section className="rounded-2xl border border-white/10 bg-[#0f0f11] p-8 text-center">
+        <div className="text-3xl">✓</div>
+        <h2 className="mt-3 text-xl font-semibold">
+          Payout processed
+        </h2>
+        <p className="mt-2 text-sm text-stone-400">
+          {payout.interviewerName} · {formatMoney(payout.netAmount)}
+        </p>
+      </section>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#090909] px-5 pb-20 pt-12 text-white sm:px-8">
-      <div className="mx-auto max-w-4xl">
-        <Link href="/dashboard" className="text-sm text-amber-400 hover:text-amber-300">← Interviewer dashboard</Link>
-        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">Earnings</p>
-        <h1 className="mt-2 text-3xl font-bold">Payout requests</h1>
-        <p className="mt-3 text-sm text-gray-400">Available balance: {data.balance} credits</p>
-        <section className="mt-7 rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-5 text-sm leading-6 text-gray-300">
-          Withdrawal submission is not enabled yet. The database has request fields, but the project has no configured credit-to-currency rate, platform fee policy, or authorized payout processor. The app will not guess a cash amount or collect payment details until those rules are set.
-        </section>
-        <section className="mt-7 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-          <h2 className="text-lg font-semibold">Request history</h2>
-          {data.payouts.length ? <ul className="mt-4 divide-y divide-white/10">{data.payouts.map((payout) => <li key={payout.id} className="flex flex-wrap items-center justify-between gap-3 py-4"><div><p className="font-medium">{payout.credits} credits · {payout.status.toLowerCase()}</p><p className="mt-1 text-xs text-gray-500">{formatDate(payout.createdAt)}</p></div><Link href={`/payout/${payout.id}`} className="text-sm text-amber-400 hover:text-amber-300">Details →</Link></li>)}</ul> : <p className="mt-4 text-sm text-gray-400">No payout requests yet.</p>}
-        </section>
+    <section className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-[#0f0f11] p-6 sm:p-8">
+      <div className="rounded-xl border border-white/10 bg-[#141417] p-4">
+        <Detail label="Interviewer" value={payout.interviewerName} />
+        <Detail label="Email" value={payout.interviewerEmail} />
+        <Detail label="Credits" value={payout.credits} />
+
+        <Detail
+          label="Platform fee"
+          value={formatMoney(payout.platformFee)}
+        />
+
+        <Separator className="my-3 bg-white/10" />
+
+        <Detail
+          label="Net payout"
+          value={formatMoney(payout.netAmount)}
+          highlight
+        />
+
+        <Detail
+          label="Payment method"
+          value={payout.paymentMethod}
+        />
+
+        <Detail
+          label="Payment details"
+          value={payout.paymentDetail}
+        />
+
+        <Detail label="Status" value={payout.status} />
       </div>
-    </main>
+
+      <p className="text-xs leading-5 text-stone-400">
+        Confirm the payout details before proceeding. Approval should
+        be recorded on the server and must not be treated as proof
+        that the payment has actually been sent.
+      </p>
+
+      {error && (
+        <p role="alert" className="text-sm text-red-400">
+          {error?.message || String(error)}
+        </p>
+      )}
+
+      <Button
+        variant="gold"
+        disabled={loading || confirmed}
+        onClick={handleApprove}
+        className="w-full"
+      >
+        {loading ? "Processing…" : "Approve payout"}
+      </Button>
+    </section>
+  );
+}
+
+function Detail({ label, value, highlight = false }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2 text-sm">
+      <span className="shrink-0 text-stone-500">{label}</span>
+      <span
+        className={
+          highlight
+            ? "break-words text-right font-semibold text-amber-400"
+            : "break-words text-right text-stone-200"
+        }
+      >
+        {value ?? "Not available"}
+      </span>
+    </div>
   );
 }

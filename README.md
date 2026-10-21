@@ -29,6 +29,14 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Email notifications and AI chat
+
+Configure `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL`, `NEXT_PUBLIC_APP_URL`, and a strong `EMAIL_CRON_SECRET` in the server environment. Verify the sender domain in Resend before enabling production delivery. Keep all values except the application URL server-only, and do not commit local environment files.
+
+The durable email outbox is processed by `GET` or `POST /api/cron/email-notifications`. Configure the deployment scheduler to call this endpoint every five minutes with `Authorization: Bearer <EMAIL_CRON_SECRET>`. The repository does not identify a deployed scheduler, so this trigger must be configured in the hosting provider or an external cron service. One-hour reminders are skipped for bookings made within the final hour; confirmation messages are still queued. Delayed reminders are skipped once the scheduled start time has passed.
+
+Apply the new database migration with the normal reviewed Prisma deployment process before deploying the notification outbox and AI chat conversation storage. Do not run it directly against production without the usual backup and migration review.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

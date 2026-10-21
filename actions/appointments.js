@@ -1,38 +1,31 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/prisma";
+import { getAppointmentsForUser } from "@/lib/appointments.mjs";
+import { getSafeErrorDetails } from "@/lib/safe-error.mjs";
 
 export async function getMyAppointments() {
-  const clerkUser = await currentUser();
-  if (!clerkUser?.id) return { role: null, appointments: [] };
+  const serverNow = new Date().toISOString();
+  let userId;
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: clerkUser.id },
-    select: { id: true, role: true },
-  });
-
-  if (!user || !["INTERVIEWEE", "INTERVIEWER"].includes(user.role)) {
-    return { role: user?.role ?? null, appointments: [] };
+  try {
+    ({ userId } = await auth());
+  } catch (error) {
+    console.error("Appointment authentication context unavailable.", getSafeErrorDetails(error));
+    return { ok: false, serverNow };
   }
 
-  const appointments = await db.booking.findMany({
-    where: user.role === "INTERVIEWEE"
-      ? { intervieweeId: user.id }
-      : { interviewerId: user.id },
-    select: {
-      id: true,
-      startTime: true,
-      endTime: true,
-      status: true,
-      streamCallId: true,
-      recordingUrl: true,
-      interviewee: { select: { name: true, imageUrl: true } },
-      interviewer: { select: { name: true, imageUrl: true, title: true, company: true } },
-      feedback: { select: { overallRating: true, summary: true } },
-    },
-    orderBy: { startTime: "desc" },
-  });
+  if (!userId) {
+    redirect("/sign-in");
+  }
 
-  return { role: user.role, appointments };
+  try {
+    const appointments = await getAppointmentsForUser(db, userId);
+    return { ok: true, ...appointments, serverNow };
+  } catch (error) {
+    console.error("Appointment query failed.", getSafeErrorDetails(error));
+    return { ok: false, serverNow };
+  }
 }

@@ -88,7 +88,9 @@ model User {
   bookingsAsInterviewee Booking[]           @relation("IntervieweeBookings")
   bookingsAsInterviewer Booking[]           @relation("InterviewerBookings")
   transactions          CreditTransaction[]
+  sessionFeedback       SessionFeedback[]
   payouts               Payout[]
+  aiConversations        AiConversation[]
 }
 
 // ─── AVAILABILITY ────────────────────────────────────────
@@ -114,12 +116,16 @@ model Booking {
   interviewer    User          @relation("InterviewerBookings", fields: [interviewerId], references: [id])
   startTime      DateTime
   endTime        DateTime
+  category       InterviewCategory?
   status         BookingStatus @default(SCHEDULED)
   creditsCharged Int
   streamCallId   String?       @unique
   recordingUrl   String?
   feedback       Feedback?
   transactions   CreditTransaction[]
+  sessionFeedback SessionFeedback?
+  recordings     StreamRecording[]
+  aiConversations AiConversation[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -145,6 +151,31 @@ model Feedback {
   sessionRating  Int?
   sessionComment String?        @db.Text
   createdAt      DateTime       @default(now())
+}
+
+model SessionFeedback {
+  id            String   @id @default(uuid())
+  bookingId     String   @unique
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  intervieweeId String
+  interviewee   User     @relation(fields: [intervieweeId], references: [id], onDelete: Cascade)
+  rating        Int
+  comment       String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  @@index([intervieweeId, createdAt])
+}
+
+model StreamRecording {
+  id             String   @id @default(uuid())
+  bookingId      String
+  booking        Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  streamEgressId String   @unique
+  recordingUrl   String
+  readyAt        DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([bookingId, readyAt])
 }
 
 // ─── CREDIT TRANSACTIONS ─────────────────────────────────
@@ -180,6 +211,55 @@ model Payout {
 
   @@index([status, createdAt])
   @@index([interviewerId, status])
+}
+
+model EmailNotification {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  kind        String
+  bookingId   String?
+  recipient   String
+  payload     Json
+  scheduledFor DateTime
+  status      String   @default("PENDING")
+  attempts    Int      @default(0)
+  sentAt      DateTime?
+  lastError   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, scheduledFor])
+  @@index([bookingId, kind])
+}
+
+model AiConversation {
+  id        String          @id @default(uuid())
+  scopeKey  String          @unique
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId String?
+  booking   Booking?        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  category  InterviewCategory
+  messages  AiChatMessage[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([userId, updatedAt])
+  @@index([bookingId, userId])
+}
+
+model AiChatMessage {
+  id             String         @id @default(uuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String         @db.Text
+  clientMessageId String?
+  replyToMessageId String?        @unique
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId, createdAt])
+  @@unique([conversationId, clientMessageId])
 }
 
 

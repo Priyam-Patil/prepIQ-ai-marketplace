@@ -1,15 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { StreamChat } from "stream-chat";
+import { useEffect, useRef, useState } from "react";
 import { getChatToken } from "@/actions/call";
+import { acquireChatClient } from "@/lib/stream-chat-lifecycle.mjs";
+import { getSafeStreamErrorDetails } from "@/lib/stream-error.mjs";
 
-function formatMessageTime(value) {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(value));
+function formatMessageTime(dateValue) {
+  if (!dateValue) return "";
+
+  const date = new Date(dateValue);
+
+  if (!Number.isFinite(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
-export default function ChatRoom({ bookingId, apiKey, user, peerName }) {
+export default function ChatRoom({
+  bookingId,
+  streamCallId,
+  apiKey,
+  user,
+  peerName,
+}) {
   const [channel, setChannel] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
@@ -17,82 +32,244 @@ export default function ChatRoom({ bookingId, apiKey, user, peerName }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
+  const mountedRef = useRef(false);
+
   useEffect(() => {
-    if (!apiKey) return undefined;
-
     let active = true;
-    let activeChannel;
-    const client = StreamChat.getInstance(apiKey);
+    let activeChannel = null;
+    let messageHandler = null;
+    let lease = null;
+    mountedRef.current = true;
 
-    const connect = async () => {
+    async function initialize() {
+      setLoading(true);
+      setError("");
+
+      if (!apiKey || !streamCallId) {
+        setError("Chat is not configured for this session.");
+        setLoading(false);
+        return;
+      }
+
       try {
-        await client.connectUser(
-          { id: user.id, name: user.name || "PrepIQ member", image: user.imageUrl || undefined },
-          async () => (await getChatToken(bookingId)).token,
-        );
-        activeChannel = client.channel("messaging", bookingId);
-        const state = await activeChannel.watch();
-        if (!active) return;
-        setMessages(state.messages || []);
-        setChannel(activeChannel);
-        activeChannel.on("message.new", (event) => {
-          const incoming = event.message;
-          if (!incoming) return;
-          setMessages((current) => current.some((item) => item.id === incoming.id) ? current : [...current, incoming]);
+        lease = acquireChatClient({
+          apiKey,
+          user: {
+            id: user.id,
+            name: user.name || "PrepIQ member",
+            ...(user.imageUrl ? { image: user.imageUrl } : {}),
+          },
+          tokenProvider: async () => {
+            const result = await getChatToken(bookingId);
+            return result.token;
+          },
+          onError: () => {
+            if (active) setError("Chat could not connect. Refresh the page and try again.");
+          },
         });
-      } catch (connectError) {
-        if (active) setError(connectError instanceof Error ? connectError.message : "Could not open this conversation.");
+        const { client } = lease;
+        await lease.ready;
+
+        if (!active) {
+          lease.release();
+          return;
+        }
+
+        activeChannel = client.channel("messaging", streamCallId);
+        await activeChannel.watch();
+
+        if (!active) {
+          await activeChannel.stopWatching();
+          lease.release();
+          return;
+        }
+
+        setChannel(activeChannel);
+        setMessages(activeChannel.state.messages || []);
+
+        messageHandler = (event) => {
+          if (!active || !event.message) return;
+
+          setMessages((previous) => {
+            if (previous.some((item) => item.id === event.message.id)) {
+              return previous;
+            }
+
+            return [...previous, event.message];
+          });
+        };
+
+        activeChannel.on("message.new", messageHandler);
+      } catch (initError) {
+        if (activeChannel) {
+          if (messageHandler) {
+            activeChannel.off("message.new", messageHandler);
+          }
+          await activeChannel.stopWatching().catch(() => {});
+          activeChannel = null;
+        }
+        lease?.release();
+        lease = null;
+        if (active) {
+          if (process.env.NODE_ENV === "development") {
+            console.error(
+              "Session chat initialization failed.",
+              getSafeStreamErrorDetails(initError)
+            );
+          }
+          setError("Unable to open session chat. Check your connection and try again.");
+        }
       } finally {
         if (active) setLoading(false);
       }
-    };
+    }
 
-    connect();
+    initialize();
+
     return () => {
       active = false;
-      activeChannel?.stopWatching().catch(() => {});
-      if (client.userID) client.disconnectUser().catch(() => {});
-    };
-  }, [apiKey, bookingId, user.id, user.imageUrl, user.name]);
+      mountedRef.current = false;
 
-  const send = async (event) => {
+      if (activeChannel) {
+        if (messageHandler) {
+          activeChannel.off("message.new", messageHandler);
+        }
+
+        activeChannel.stopWatching().catch(() => {});
+      }
+
+      lease?.release();
+    };
+  }, [
+    apiKey,
+    bookingId,
+    streamCallId,
+    user.id,
+    user.imageUrl,
+    user.name,
+  ]);
+
+  async function sendMessage(event) {
     event.preventDefault();
+
     const text = message.trim();
-    if (!channel || !text || sending) return;
+
+    if (!text || !channel || sending) return;
+
     setSending(true);
+    setError("");
+
     try {
-      await channel.sendMessage({ text });
-      setMessage("");
-    } catch {
-      setError("Message could not be sent. Please try again.");
+      const result = await channel.sendMessage({ text });
+
+      if (result?.message) {
+        if (mountedRef.current) {
+          setMessages((previous) => {
+            if (previous.some((item) => item.id === result.message.id)) {
+              return previous;
+            }
+            return [...previous, result.message];
+          });
+        }
+      }
+
+      if (mountedRef.current) setMessage("");
+    } catch (sendError) {
+      if (mountedRef.current) {
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            "Session chat message send failed.",
+            getSafeStreamErrorDetails(sendError, { includeMessage: false })
+          );
+        }
+        setError("Message could not be sent. Check your connection and try again.");
+      }
     } finally {
-      setSending(false);
+      if (mountedRef.current) setSending(false);
     }
-  };
+  }
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">Session thread</p>
-          <h2 className="mt-2 text-lg font-semibold">Chat with {peerName || "your interview partner"}</h2>
-        </div>
-        <span className="text-xs text-gray-500">Private to this booking</span>
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+      <div className="border-b border-white/10 px-5 py-4">
+        <h2 className="font-semibold">Session chat</h2>
+        <p className="mt-1 text-sm text-gray-400">
+          Conversation with {peerName || "your interviewer"}
+        </p>
       </div>
 
-      {(error || !apiKey) && <p role="alert" className="mt-4 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs text-red-300">{error || "Stream Chat is not configured."}</p>}
-      <div aria-live="polite" className="mt-4 flex max-h-80 min-h-40 flex-col gap-3 overflow-y-auto rounded-xl border border-white/10 bg-black/25 p-3">
-        {loading && apiKey ? <p className="m-auto text-sm text-gray-500">Loading conversation…</p> : messages.length ? messages.map((item) => {
-          const ownMessage = item.user?.id === user.id;
-          return <div key={item.id} className={`max-w-[88%] rounded-xl px-3 py-2 ${ownMessage ? "ml-auto bg-amber-400/10 text-amber-50" : "bg-white/[0.06] text-gray-200"}`}><div className="flex items-center justify-between gap-4"><span className="text-xs font-medium">{ownMessage ? "You" : item.user?.name || peerName || "Interview partner"}</span><time className="text-[10px] text-gray-500">{formatMessageTime(item.created_at)}</time></div><p className="mt-1 whitespace-pre-wrap break-words text-sm">{item.text}</p></div>;
-        }) : apiKey && !error ? <p className="m-auto text-sm text-gray-500">No messages yet. Send a note to start the conversation.</p> : null}
+      <div className="max-h-[26rem] min-h-48 space-y-3 overflow-y-auto p-5">
+        {loading && (
+          <p className="text-sm text-gray-400">Connecting to chat...</p>
+        )}
+
+        {!loading && !error && messages.length === 0 && (
+          <p className="text-sm text-gray-500">
+            No messages yet. Start the conversation.
+          </p>
+        )}
+
+        {messages.map((item) => {
+          const own = item.user?.id === user.id;
+
+          return (
+            <div
+              key={item.id}
+              className={`flex ${own ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-[85%] rounded-xl px-3 py-2 ${
+                  own
+                    ? "bg-amber-400 text-black"
+                    : "bg-white/[0.08] text-white"
+                }`}
+              >
+                <p className="whitespace-pre-wrap break-words text-sm">
+                  {item.text || ""}
+                </p>
+
+                <p
+                  className={`mt-1 text-[10px] ${
+                    own ? "text-black/60" : "text-gray-500"
+                  }`}
+                >
+                  {own ? "You" : item.user?.name || peerName || "Participant"}
+                  {" · "}
+                  {formatMessageTime(item.created_at)}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <form onSubmit={send} className="mt-3 flex gap-2">
-        <input value={message} onChange={(event) => setMessage(event.target.value)} maxLength={4000} placeholder="Write a message…" aria-label="Message" disabled={!channel || sending} className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-gray-600 disabled:opacity-50" />
-        <button type="submit" disabled={!channel || !message.trim() || sending} className="rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50">Send</button>
+      {error && (
+        <p role="alert" className="px-5 pb-3 text-sm text-red-300">
+          {error}
+        </p>
+      )}
+
+      <form
+        onSubmit={sendMessage}
+        className="flex gap-2 border-t border-white/10 p-4"
+      >
+        <input
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          maxLength={2000}
+          placeholder="Write a message..."
+          aria-label="Chat message"
+          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none placeholder:text-gray-500 focus:border-amber-400"
+        />
+
+        <button
+          type="submit"
+          disabled={loading || !channel || sending || !message.trim()}
+          className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {sending ? "Sending..." : "Send"}
+        </button>
       </form>
-      <p className="mt-2 text-right text-[11px] text-gray-600">Messages remain available with your appointment.</p>
     </section>
   );
 }

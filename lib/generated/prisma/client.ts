@@ -62,6 +62,16 @@ export type Booking = Prisma.BookingModel
  */
 export type Feedback = Prisma.FeedbackModel
 /**
+ * Model SessionFeedback
+ * 
+ */
+export type SessionFeedback = Prisma.SessionFeedbackModel
+/**
+ * Model StreamRecording
+ * 
+ */
+export type StreamRecording = Prisma.StreamRecordingModel
+/**
  * Model CreditTransaction
  * 
  */
@@ -71,3 +81,18 @@ export type CreditTransaction = Prisma.CreditTransactionModel
  * 
  */
 export type Payout = Prisma.PayoutModel
+/**
+ * Model EmailNotification
+ * 
+ */
+export type EmailNotification = Prisma.EmailNotificationModel
+/**
+ * Model AiConversation
+ * 
+ */
+export type AiConversation = Prisma.AiConversationModel
+/**
+ * Model AiChatMessage
+ * 
+ */
+export type AiChatMessage = Prisma.AiChatMessageModel
